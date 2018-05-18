@@ -42,7 +42,7 @@ In this first example we schedule a cleanup script to run this one time.
 ~~~ puppet
 scheduled_task { 'Disk Cleanup': # Unique name for the scheduled task
   command   => "$::system32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  arguments => '-File "C:\\Scripts\\Clear-DiskSpace.ps1",
+  arguments => '-File "C:\\Scripts\\Clear-DiskSpace.ps1"',
   enabled   => 'true',           # This is the default, but including it is good practice. Flip to 'false' to disable the task.
   trigger   => [{
     schedule   => 'once',        # Defines the trigger type; required.
