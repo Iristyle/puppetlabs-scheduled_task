@@ -78,7 +78,8 @@ module Trigger
        'which_occurrence',
        'day_of_week',
        'minutes_interval',
-       'minutes_duration'
+       'minutes_duration',
+       'user'
      ].freeze
 
      ValidScheduleKeys = [
@@ -86,7 +87,8 @@ module Trigger
       'daily',
       'weekly',
       'monthly',
-      'boot'
+      'boot',
+      'logon'
      ].freeze
 
     # https://msdn.microsoft.com/en-us/library/system.datetime.fromoadate(v=vs.110).aspx
@@ -187,6 +189,8 @@ module Trigger
         end
       when 'once'
         raise ArgumentError.new("Must specify 'start_date' when defining a one-time trigger") unless manifest_hash['start_date']
+      when 'logon'
+        # userid is mandatory - is it specified?
       end
 
       if manifest_hash.key?('every')
@@ -516,7 +520,7 @@ module Trigger
       # Type::TASK_TRIGGER_EVENT                => 'event',
       # Type::TASK_TRIGGER_IDLE                 => 'idle',
       # Type::TASK_TRIGGER_REGISTRATION         => 'task_registered',
-      # Type::TASK_TRIGGER_LOGON                => 'logon',
+      Type::TASK_TRIGGER_LOGON                => 'logon',
       # Type::TASK_TRIGGER_SESSION_STATE_CHANGE => 'session_state_change',
     }.freeze
 
@@ -582,6 +586,12 @@ module Trigger
           manifest_hash.merge!({
             'schedule' => 'boot'
           })
+        when Type::TASK_TRIGGER_LOGON
+          manifest_hash.merge!({
+            'schedule' => 'logon',
+            # TODO: I believe user needs to be copied as well
+            'user'     => iTrigger.UserId
+          }
       end
 
       manifest_hash
@@ -636,6 +646,8 @@ module Trigger
           iTrigger.MonthsOfYear = Month.indexes_to_bitmask(manifest_hash['months'] || Month.indexes)
           # HACK: convert V1 week value to names, then back to V2 bitmask
           iTrigger.WeeksOfMonth = WeeksOfMonth.names_to_bitmask(manifest_hash['which_occurrence'])
+        when Type::TASK_TRIGGER_LOGON
+          iTrigger.UserId = manifest_hash['user']
       end
 
       nil
